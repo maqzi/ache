@@ -35,12 +35,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
-import javax.net.ssl.HostnameVerifier;
-import javax.net.ssl.SSLContext;
-import javax.net.ssl.SSLHandshakeException;
-import javax.net.ssl.TrustManager;
-import javax.net.ssl.TrustManagerFactory;
-import javax.net.ssl.X509TrustManager;
+import javax.net.ssl.*;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.http.Header;
@@ -104,6 +99,7 @@ import focusedCrawler.crawler.crawlercommons.fetcher.Payload;
 import focusedCrawler.crawler.crawlercommons.fetcher.RedirectFetchException;
 import focusedCrawler.crawler.crawlercommons.fetcher.RedirectFetchException.RedirectExceptionReason;
 import focusedCrawler.crawler.crawlercommons.fetcher.UrlFetchException;
+import sun.rmi.runtime.Log;
 
 @SuppressWarnings("serial")
 public class SimpleHttpFetcher extends BaseHttpFetcher {
@@ -545,7 +541,7 @@ public class SimpleHttpFetcher extends BaseHttpFetcher {
         init();
 
         try {
-            return doRequest(request, url, payload);
+            return doRequest(request, url, payload, 0);
 //        } catch (HttpFetchException e) {
 //            // Don't bother generating a trace for a 404 (not found)
 //            if (LOGGER.isTraceEnabled() && (e.getHttpStatus() != HttpStatus.SC_NOT_FOUND)) {
@@ -574,7 +570,7 @@ public class SimpleHttpFetcher extends BaseHttpFetcher {
         init();
 
         try {
-            return doRequest(request, url, payload);
+            return doRequest(request, url, payload,0);
         } catch (BaseFetchException e) {
             if (LOGGER.isTraceEnabled()) {
                 LOGGER.trace("Exception fetching {} {}", url, e.getMessage());
@@ -583,7 +579,7 @@ public class SimpleHttpFetcher extends BaseHttpFetcher {
         }
     }
 
-    private FetchedResult doRequest(HttpRequestBase request, String url, Payload payload) throws BaseFetchException {
+    private FetchedResult doRequest(HttpRequestBase request, String url, Payload payload, Integer tries) throws BaseFetchException {
         LOGGER.trace("Fetching " + url);
 
         HttpResponse response;
@@ -710,7 +706,27 @@ public class SimpleHttpFetcher extends BaseHttpFetcher {
             } else {
                 throw new IOFetchException(url, e);
             }
-        } catch (IOException e) {
+        }catch (SSLException e){
+            LOGGER.error(e +" MUNAF: "+ url);
+//        will throw exception if both http and https tried
+            if(tries>=1){
+                LOGGER.error("both http and https failed");
+                needAbort = false;
+                throw new IOFetchException(url,e);
+            }
+            try {
+                URL realUrl = new URL(url);
+                String websiteAddress = realUrl.getHost()+realUrl.getPath();
+                String protocol = realUrl.getProtocol();
+                String newUrl = protocol.equals("http") ? "https://"+websiteAddress : protocol.equals("https") ? "http://"+websiteAddress : null;
+                if(!newUrl.equals(null)){
+                    tries++;
+                    doRequest(request,newUrl,payload,tries);
+                }
+            } catch (MalformedURLException mue) {}
+            needAbort = false;
+            throw new IOFetchException(url,e);
+        }catch (IOException e) {
             // Oleg guarantees that no abort is needed in the case of an
             // IOException
             needAbort = false;
@@ -1073,8 +1089,20 @@ public class SimpleHttpFetcher extends BaseHttpFetcher {
             try {
                 SSLContext sslContext = SSLContext.getInstance(contextName);
                 sslContext.init(null, new TrustManager[] { new DummyX509TrustManager(null) }, null);
+
+//                disable certificate validation
+//                sslContext.init(null, new TrustManager[] { new X509TrustManager() {
+//                    @Override
+//                    public void checkClientTrusted(X509Certificate[] x509Certificates, String s) throws CertificateException { }
+//
+//                    @Override
+//                    public void checkServerTrusted(X509Certificate[] x509Certificates, String s) throws CertificateException { }
+//
+//                    @Override
+//                    public X509Certificate[] getAcceptedIssuers() {return new X509Certificate[0];}
+//                }},null);
                 HostnameVerifier hostnameVerifier = NoopHostnameVerifier.INSTANCE;
-                sf = new SSLConnectionSocketFactory(sslContext, hostnameVerifier);
+                sf = new SSLConnectionSocketFactory(sslContext,hostnameVerifier);
                 break;
             } catch (NoSuchAlgorithmException e) {
                 LOGGER.debug("SSLContext algorithm not available: " + contextName);

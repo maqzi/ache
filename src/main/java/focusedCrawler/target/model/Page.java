@@ -35,11 +35,11 @@ public class Page implements Serializable {
     private LinkRelevance linkRelevance;
     private ParsedData parsedData;
     private TargetRelevance targetRelevance;
-
+    private boolean isNearDuplicate = false;
     private boolean auth = false;
     
     public Page() {
-        // required for JSON serialization
+        // required for JSON de-serialization
     }
     
     public Page(URL url, String content) {
@@ -299,12 +299,24 @@ public class Page implements Serializable {
         return redirectedURL == null ? url.toString() : redirectedURL.toString();
     }
 
+    public String getFinalUrlHost() {
+        return redirectedURL == null ? url.getHost() : redirectedURL.getHost();
+    }
+
     public String getCrawlerId() {
         return this.crawlerId;
     }
 
     public void setCrawlerId(String crawlerId) {
         this.crawlerId = crawlerId;
+    }
+
+    public boolean isNearDuplicate() {
+        return isNearDuplicate;
+    }
+
+    public void setNearDuplicate(boolean isNearDuplicate) {
+        this.isNearDuplicate = isNearDuplicate;
     }
 
 }

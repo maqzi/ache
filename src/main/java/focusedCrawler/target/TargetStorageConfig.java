@@ -20,6 +20,9 @@ public class TargetStorageConfig {
     @JsonProperty("target_storage.data_formats")
     private List<String> dataFormats = asList("FILES");
 
+    @JsonProperty("target_storage.amazon_s3.region")
+    private String awsS3Region = null;
+
     @JsonProperty("target_storage.target_directory")
     private String targetStorageDirectory = "data_pages";
 
@@ -166,6 +169,10 @@ public class TargetStorageConfig {
 
     public double getNearDuplicatesSimilarityThreshold() {
         return nearDuplicatesSimilarityThreshold;
+    }
+
+    public String getAwsS3Region() {
+        return awsS3Region;
     }
 
 }

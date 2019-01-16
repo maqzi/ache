@@ -11,6 +11,8 @@ import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.sql.Date;
+import java.sql.Timestamp;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
@@ -318,17 +320,16 @@ public class HttpDownloader implements Closeable {
 */
             if (requestLog != null) {
                 if (result != null) {
-
 //                    requestLog.printf("%d\t%s\t%s\t%s\n", result.getFetchTime(),
 //                            result.getStatusCode(), result.getHostAddress(), url, link.getURL().getHost());
-                    requestLog.printf("%d\t%s\t%s\t%s\t%s\t%s\t%.5f\t%s\t%s\t%s\n", result.getFetchTime(),"s3://zzz",
+                    requestLog.printf("%s\t%s\t%s\t%s\t%s\t%s\t%.5f\t%s\t%s\t%s\n", new Timestamp(result.getFetchTime()),"s3://zzz",
                             "ip",result.getContentType(),result.getStatusCode(),result.getReasonPhrase(),
                             (float)result.getContentLength()/(float)result.getResponseRate(), url,result.getNumRedirects(),
                             result.getFetchedUrl());
                 } else {
 //                    requestLog.printf("%d\t%s\t%s\t%s\n", System.currentTimeMillis(), -1, "unknown",
 //                            url);
-                    requestLog.printf("%d\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\n", System.currentTimeMillis(),"n/a",
+                    requestLog.printf("%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\n", new Timestamp(System.currentTimeMillis()),"n/a",
                             "unknown","unknown",-1,0,"unknown","unknown", url,"n/a","unknown");
                 }
             }

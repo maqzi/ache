@@ -5,6 +5,8 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.PrintWriter;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
 import java.util.HashSet;
 import java.util.Scanner;
 
@@ -28,7 +30,7 @@ public class TargetStorageMonitor {
     
     int totalOnTopicPages = 0;
     private int totalOfPages = 0;
-    
+
     public TargetStorageMonitor(String dataPath) {
     	this(dataPath, new MetricsManager(dataPath));
     }
@@ -91,7 +93,14 @@ public class TargetStorageMonitor {
         } else {
             fNonRelevantPages.printf("%s\t%.10f\t%d\n", page.getURL().toString(), prob, currentTime);
         }
-        fStorageMap.printf("%s\t%s\n",page.getURL(),TargetRepository.storage_map.get(page.getURL().toString()));
+
+        String address = null;
+        try {
+            address = InetAddress.getByName(page.getURL().getHost()).getHostAddress();
+        }catch (UnknownHostException uhe){
+
+        }
+        fStorageMap.printf("%s\t%s\t%s\n",page.getURL(),TargetRepository.storage_map.get(page.getURL().toString()),address);
     }
 
     public int getTotalOfPages() {

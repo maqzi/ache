@@ -87,10 +87,11 @@ public class FileSystemTargetRepository implements TargetRepository {
         this.hashFilename = hashFilename;
         this.compressData = compressData;
     }
-    
+
     @Override
     public void close() {}
 
+    @Override
     public boolean insert(Page target) {
         try {
             String id = target.getURL().toString();
@@ -102,7 +103,7 @@ public class FileSystemTargetRepository implements TargetRepository {
             }
 
             Path filePath = getFilePath(id, hostPath);
-            
+            storage_map.put(url.toString(),filePath.toString());
             try(OutputStream fileStream = new PrintStream(filePath.toFile())) {
                 if(compressData) {
                     try(OutputStream gzipStream = new DeflaterOutputStream(fileStream)) {

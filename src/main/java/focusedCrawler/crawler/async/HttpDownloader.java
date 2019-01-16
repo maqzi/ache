@@ -313,13 +313,23 @@ public class HttpDownloader implements Closeable {
                 counterErrors.inc();
             }
 
+/*
+*   crawl_id | page_id | fetchtime | storagelocation | ip | content type | statuscode | statusmessage | response time |  original url | num_redirects | fetched url
+*/
             if (requestLog != null) {
                 if (result != null) {
-                    requestLog.printf("%d\t%s\t%s\t%s\n", result.getFetchTime(),
-                            result.getStatusCode(), result.getHostAddress(), url);
+
+//                    requestLog.printf("%d\t%s\t%s\t%s\n", result.getFetchTime(),
+//                            result.getStatusCode(), result.getHostAddress(), url, link.getURL().getHost());
+                    requestLog.printf("%d\t%s\t%s\t%s\t%s\t%s\t%.5f\t%s\t%s\t%s\n", result.getFetchTime(),"s3://zzz",
+                            "ip",result.getContentType(),result.getStatusCode(),result.getReasonPhrase(),
+                            (float)result.getContentLength()/(float)result.getResponseRate(), url,result.getNumRedirects(),
+                            result.getFetchedUrl());
                 } else {
-                    requestLog.printf("%d\t%s\t%s\t%s\n", System.currentTimeMillis(), -1, "unknown",
-                            url);
+//                    requestLog.printf("%d\t%s\t%s\t%s\n", System.currentTimeMillis(), -1, "unknown",
+//                            url);
+                    requestLog.printf("%d\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\n", System.currentTimeMillis(),"n/a",
+                            "unknown","unknown",-1,0,"unknown","unknown", url,"n/a","unknown");
                 }
             }
             distpatchThreadPool.submit(new FetchFinishedHandler(link, result, callback, exception));

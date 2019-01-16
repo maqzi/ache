@@ -19,6 +19,7 @@ import focusedCrawler.target.repository.WarcTargetRepository;
 import focusedCrawler.target.repository.FileSystemTargetRepository.DataFormat;
 import focusedCrawler.target.repository.elasticsearch.ElasticSearchConfig;
 import focusedCrawler.target.repository.kafka.KafkaTargetRepository;
+import focusedCrawler.target.repository.AmazonS3TargetRepository;
 
 public class TargetRepositoryFactory {
 
@@ -85,7 +86,8 @@ public class TargetRepositoryFactory {
                     esconfig.setTypeName(esTypeName);
                 }
                 return new ElasticSearchRestTargetRepository(esconfig);
-
+            case "AMAZON_S3":
+                return new AmazonS3TargetRepository(targetDirectory, config.getAwsS3Region(), config.getHashFileName());
             default:
                 throw new IllegalArgumentException("Invalid data format provided: " + dataFormat);
         }

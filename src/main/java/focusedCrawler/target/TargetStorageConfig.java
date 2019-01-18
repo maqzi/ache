@@ -41,6 +41,9 @@ public class TargetStorageConfig {
     @JsonProperty("target_storage.amazon_s3.region")
     private String awsS3Region = null;
 
+    @JsonProperty("target_storage.amazon_s3.bucket_name")
+    private String bucketName = null;
+
     @JsonProperty("target_storage.target_directory")
     private String targetStorageDirectory = "data_pages";
 
@@ -215,5 +218,9 @@ public class TargetStorageConfig {
 
     public String getDbRegion() {
         return dbRegion;
+    }
+
+    public String getBucketName() {
+        return bucketName;
     }
 }

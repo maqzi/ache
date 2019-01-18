@@ -257,12 +257,12 @@ public class Main {
                     crawler.awaitTerminated();
                 } finally {
                     restServer.shutdown();
-//                    if (config.getTargetStorageConfig().isUpdateSql()) {
-//                        RDSConnector conn = new RDSConnector(config.getTargetStorageConfig(), crawlerId, dataPath);
-//                        conn.parseCSVMetrics();
-//                        //update sql
-//                        conn.updateAWS();
-//                    }
+                    if (config.getTargetStorageConfig().isUpdateSql()) {
+                        RDSConnector conn = new RDSConnector(config.getTargetStorageConfig(), crawlerId, dataPath);
+                        conn.parseCSVMetrics();
+                        //update sql
+                        conn.updateAWS();
+                    }
                 }
             } catch (Throwable e) {
                 logger.error("Crawler execution failed: " + e.getMessage() + "\n", e);

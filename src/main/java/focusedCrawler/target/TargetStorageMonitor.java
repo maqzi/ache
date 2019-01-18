@@ -54,6 +54,7 @@ public class TargetStorageMonitor {
             fHarvestInfo = createBufferedWriter(fileHarvestInfo);
             fNonRelevantPages = createBufferedWriter(fileNonRelevantPages);
             fStorageMap = createBufferedWriter(fileStorageMap);
+            fStorageMap.printf("%s\t%s\n","original_url","location");
         } catch (Exception e) {
             throw new IllegalStateException("Problem while opening files to export target metrics", e);
         }
@@ -100,7 +101,7 @@ public class TargetStorageMonitor {
 //        }catch (UnknownHostException uhe){
 //
 //        }
-        fStorageMap.printf("%s\t%s\t%s\n",page.getURL(),TargetRepository.storage_map.get(page.getURL().toString()), page.getCrawlerId());
+        fStorageMap.printf("%s\t%s\n",page.getURL(),TargetRepository.storage_map.get(page.getURL().toString()));
     }
 
     public int getTotalOfPages() {

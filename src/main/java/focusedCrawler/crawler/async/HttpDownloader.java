@@ -21,6 +21,7 @@ import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import focusedCrawler.crawler.CrawlersManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -117,6 +118,9 @@ public class HttpDownloader implements Closeable {
             try {
                 Files.createDirectories(logPath.getParent());
                 this.requestLog = openLogFile(logPath);
+                requestLog.printf("%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\n", "timestamp",
+                        "original_url","num_redirects", "fetched_url", "status_code","status_message",
+                        "content_type", "response_time");
             } catch (IOException e) {
                 throw new RuntimeException(
                         "Failed to open downloader log at path: " + logPath.toString(), e);
@@ -345,8 +349,7 @@ public class HttpDownloader implements Closeable {
                             url,result.getNumRedirects(), result.getFetchedUrl(), result.getStatusCode(),result.getReasonPhrase(),
                             result.getContentType(), (float)result.getContentLength()/(float)result.getResponseRate());
                 } else {
-//                    requestLog.printf("%d\t%s\t%s\t%s\n", System.currentTimeMillis(), -1, "unknown",
-//                            url);
+//                    requestLog.printf("%d\t%s\t%s\t%s\n", System.currentTimeMillis(), -1, "unknown", url);
                     requestLog.printf("%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\n", new Timestamp(System.currentTimeMillis()),
                             url,null, null, -1, null, null, null);
                 }

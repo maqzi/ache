@@ -3,6 +3,7 @@ package focusedCrawler.util;
 import focusedCrawler.target.TargetStorageConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import tech.tablesaw.api.StringColumn;
 import tech.tablesaw.api.Table;
 import tech.tablesaw.io.DataFrameWriter;
 import tech.tablesaw.io.csv.CsvReadOptions;
@@ -16,6 +17,8 @@ import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Properties;
 
 public class RDSConnector {
@@ -75,34 +78,44 @@ public class RDSConnector {
 
         CsvReadOptions.Builder dRBuilder = CsvReadOptions.builder(dRPath)
                         .separator('\t')			// table is tab-delimited
-                        .header(false);				// no header
+                        .header(true);				// no header
 
         CsvReadOptions.Builder sMBuilder = CsvReadOptions.builder(sMPath)
                 .separator('\t')			// table is tab-delimited
-                .header(false);				// no header
+                .header(true);				// no header
 
-            Table downloadRequests = Table.read().csv(dRBuilder.build());
-            Table storageMap = Table.read().csv(sMBuilder.build());
-            Table dfJoined = new DataFrameJoiner(downloadRequests, "C5").leftOuter(storageMap,true,"C0");
+        Table downloadRequests = Table.read().csv(dRBuilder.build());
+        Table storageMap = Table.read().csv(sMBuilder.build());
+        Table dfJoined = new DataFrameJoiner(downloadRequests, "original_url").leftOuter(storageMap,true,"original_url");
+
+        // add crawler name everywhere
+        StringColumn crawler_name = StringColumn.create("crawler_name");
+        ArrayList<String> ids = new ArrayList<>(dfJoined.column("original_url").size());
+        for (int i = 0; i < dfJoined.column("original_url").size(); i++){
+            ids.add(crawlerId);
+        }
+        crawler_name.addAll(ids);
+        dfJoined.addColumns(crawler_name);
 //            logger.info(dfJoined.print(10));
 
-            CsvWriteOptions.Builder dfjBuilder = CsvWriteOptions.builder(dataPath+crawlerId+"/data_monitor/joined.csv");
-            DataFrameWriter dfw = new DataFrameWriter(dfJoined);
-            dfw.csv(dfjBuilder.build());
+        CsvWriteOptions.Builder dfjBuilder = CsvWriteOptions.builder(dataPath+crawlerId+"/data_monitor/joined.csv");
+        DataFrameWriter dfw = new DataFrameWriter(dfJoined);
+        dfw.csv(dfjBuilder.build());
     }
 
     public void updateAWS() throws SQLException {
         logger.info("Updating RDS endpoint: "+RDS_INSTANCE_HOSTNAME+":"+RDS_INSTANCE_PORT);
         String updateQuery = "LOAD DATA LOCAL INFILE \""+ dataPath + crawlerId +"/data_monitor/joined.csv\" INTO TABLE ACHECrawls.crawls " +
-                "FIELDS TERMINATED BY ',' LINES TERMINATED BY '\n' IGNORE 1 LINES (`Timestamp`, `Content_Type`, `Status_Code`, `Status_Message`, `Response_time`, `Crawl_URL`, `Num_redirects`, `Fetched_URL`, `Location`,`Host_IP`);";
+                "FIELDS TERMINATED BY ',' LINES TERMINATED BY '\n' IGNORE 1 LINES (`timestamp`, `original_url`, `num_redirects`, `fetched_url`, `status_code`, `status_message`, `content_type`, `response_time`, `location`, `crawler_name`);";
 
         //get the connection
         Connection connection = getDBConnectionWithoutIam();
 
         //verify the connection is successful
         Statement stmt= connection.createStatement();
-        ResultSet rs=stmt.executeQuery(updateQuery); // do something with rs?
+        ResultSet rs = stmt.executeQuery(updateQuery); // do something with rs?
 
+        logger.info("RDS update complete");
         //close the connection
         stmt.close();
         connection.close();

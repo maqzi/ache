@@ -100,7 +100,7 @@ public class TargetStorageMonitor {
         }catch (UnknownHostException uhe){
 
         }
-        fStorageMap.printf("%s\t%s\t%s\n",page.getURL(),TargetRepository.storage_map.get(page.getURL().toString()),address);
+        fStorageMap.printf("%s\t%s\t%s\n",page.getURL(),TargetRepository.storage_map.get(page.getURL().toString()), address, page.getCrawlerId());
     }
 
     public int getTotalOfPages() {

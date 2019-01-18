@@ -17,6 +17,7 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLEncoder;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Date;
 import java.util.List;
 
@@ -28,12 +29,13 @@ public class AmazonS3TargetRepository implements TargetRepository {
     private final String region;
     private boolean bucketPresent;
     private boolean hashFilename;
-    private Path directory;
+//    private Path directory;
 
     public AmazonS3TargetRepository(Path directory, String region, boolean hashFilename) {
         this.awsClient = AmazonS3ClientBuilder.defaultClient();
-        this.directory = directory.getName(directory.getNameCount()-2);
-        this.bucketName = getBucketName(this.directory);
+//        this.directory = directory.getName(directory.getNameCount()-2);
+        //this.bucketName = getBucketName(this.directory);
+        this.bucketName = "ache-page-source-downloader-client-maq";
         this.region = region;
         this.hashFilename = hashFilename;
     }
@@ -79,11 +81,12 @@ public class AmazonS3TargetRepository implements TargetRepository {
             URL url = new URL(id);
             Path hostPath = getHostPath(url);
             Path filePath = getFilePath(id, hostPath);
-
+            String filePathWithCrawlerId = Paths.get(target.getCrawlerId(), filePath.toString()).toString();
+        //    storage_map.put(id, filePathWithCrawlerId);
             try{
-                synchronized (this){
-                    awsClient.putObject(bucketName, filePath.toString(), target.getContentAsString());
-                }
+//                synchronized (this){
+                    awsClient.putObject(bucketName, filePathWithCrawlerId, target.getContentAsString());
+//                }
             }catch(AmazonServiceException e){
                 logger.error(e.getMessage());
             }
@@ -106,7 +109,7 @@ public class AmazonS3TargetRepository implements TargetRepository {
 
     private Path getHostPath(URL url) throws MalformedURLException, UnsupportedEncodingException {
         String host = url.getHost();
-        return directory.resolve(URLEncoder.encode(host, "UTF-8"));
+        return Paths.get(URLEncoder.encode(host, "UTF-8"));
     }
 
     private Path getHostPath(String url) throws MalformedURLException, UnsupportedEncodingException {

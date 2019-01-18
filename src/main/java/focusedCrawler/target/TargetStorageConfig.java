@@ -17,6 +17,24 @@ import focusedCrawler.target.repository.kafka.KafkaConfig;
 
 public class TargetStorageConfig {
 
+    @JsonProperty("target_storage.sql.update_sql")
+    private boolean updateSql = false;
+
+    @JsonProperty("target_storage.sql.db_user")
+    private String dbUser = null;
+
+    @JsonProperty("target_storage.sql.db_pass")
+    private String dbPass = null;
+
+    @JsonProperty("target_storage.sql.db_endpoint")
+    private String dbEndpoint = null;
+
+    @JsonProperty("target_storage.sql.db_port")
+    private int dbPort = 3306;
+
+    @JsonProperty("target_storage.sql.db_region")
+    private String dbRegion = "us-east-1";
+
     @JsonProperty("target_storage.data_formats")
     private List<String> dataFormats = asList("FILES");
 
@@ -175,4 +193,27 @@ public class TargetStorageConfig {
         return awsS3Region;
     }
 
+    public boolean isUpdateSql() {
+        return updateSql;
+    }
+
+    public String getDbUser() {
+        return dbUser;
+    }
+
+    public String getDbPass() {
+        return dbPass;
+    }
+
+    public String getDbEndpoint() {
+        return dbEndpoint;
+    }
+
+    public int getDbPort() {
+        return dbPort;
+    }
+
+    public String getDbRegion() {
+        return dbRegion;
+    }
 }

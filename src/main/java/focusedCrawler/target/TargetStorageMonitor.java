@@ -95,12 +95,12 @@ public class TargetStorageMonitor {
         }
 
         String address = null;
-        try {
-            address = InetAddress.getByName(page.getURL().getHost()).getHostAddress();
-        }catch (UnknownHostException uhe){
-
-        }
-        fStorageMap.printf("%s\t%s\t%s\n",page.getURL(),TargetRepository.storage_map.get(page.getURL().toString()), address, page.getCrawlerId());
+//        try {
+//            address = InetAddress.getByName(page.getURL().getHost()).getHostAddress();
+//        }catch (UnknownHostException uhe){
+//
+//        }
+        fStorageMap.printf("%s\t%s\t%s\n",page.getURL(),TargetRepository.storage_map.get(page.getURL().toString()), page.getCrawlerId());
     }
 
     public int getTotalOfPages() {

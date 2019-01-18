@@ -5,6 +5,7 @@ import java.lang.reflect.Method;
 import java.util.Arrays;
 import java.util.List;
 
+import focusedCrawler.util.RDSConnector;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -243,6 +244,7 @@ public class Main {
                 Configuration config = new Configuration(configPath);
                 CrawlersManager crawlManager = new CrawlersManager(dataPath, config);
 
+                crawlerId = crawlerId + '-' + System.currentTimeMillis();
                 CrawlContext crawlerContext = crawlManager.createCrawler(crawlerId, configPath,
                         seedPath, modelPath, esIndexName, esTypeName);
 
@@ -255,6 +257,12 @@ public class Main {
                     crawler.awaitTerminated();
                 } finally {
                     restServer.shutdown();
+                    if (config.getTargetStorageConfig().isUpdateSql()) {
+                        RDSConnector conn = new RDSConnector(config.getTargetStorageConfig(), crawlerId, dataPath);
+                        conn.parseCSVMetrics();
+                        //update sql
+                        conn.updateAWS();
+                    }
                 }
             } catch (Throwable e) {
                 logger.error("Crawler execution failed: " + e.getMessage() + "\n", e);

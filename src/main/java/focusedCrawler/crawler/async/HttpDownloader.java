@@ -11,6 +11,7 @@ import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.sql.Timestamp;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
@@ -20,6 +21,7 @@ import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import focusedCrawler.crawler.CrawlersManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -116,6 +118,9 @@ public class HttpDownloader implements Closeable {
             try {
                 Files.createDirectories(logPath.getParent());
                 this.requestLog = openLogFile(logPath);
+                requestLog.printf("%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\n", "timestamp",
+                        "original_url","num_redirects", "fetched_url", "status_code","status_message",
+                        "content_type", "response_time");
             } catch (IOException e) {
                 throw new RuntimeException(
                         "Failed to open downloader log at path: " + logPath.toString(), e);
@@ -338,11 +343,15 @@ public class HttpDownloader implements Closeable {
 
             if (requestLog != null) {
                 if (result != null) {
-                    requestLog.printf("%d\t%s\t%s\t%s\n", result.getFetchTime(),
-                            result.getStatusCode(), result.getHostAddress(), url);
+//                    requestLog.printf("%d\t%s\t%s\t%s\n", result.getFetchTime(),
+//                            result.getStatusCode(), result.getHostAddress(), url, link.getURL().getHost());
+                    requestLog.printf("%s\t%s\t%s\t%s\t%s\t%s\t%s\t%.5f\n", new Timestamp(result.getFetchTime()),
+                            url,result.getNumRedirects(), result.getFetchedUrl(), result.getStatusCode(),result.getReasonPhrase(),
+                            result.getContentType(), (float)result.getContentLength()/(float)result.getResponseRate());
                 } else {
-                    requestLog.printf("%d\t%s\t%s\t%s\n", System.currentTimeMillis(), -1, "unknown",
-                            url);
+//                    requestLog.printf("%d\t%s\t%s\t%s\n", System.currentTimeMillis(), -1, "unknown", url);
+                    requestLog.printf("%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\n", new Timestamp(System.currentTimeMillis()),
+                            url,null, null, -1, null, null, null);
                 }
             }
             distpatchThreadPool.submit(new FetchFinishedHandler(link, result, callback, exception));

@@ -87,7 +87,7 @@ public class TargetRepositoryFactory {
                 }
                 return new ElasticSearchRestTargetRepository(esconfig);
             case "AMAZON_S3":
-                return new AmazonS3TargetRepository(targetDirectory, config.getAwsS3Region(), config.getHashFileName());
+                return new AmazonS3TargetRepository(config);
             default:
                 throw new IllegalArgumentException("Invalid data format provided: " + dataFormat);
         }

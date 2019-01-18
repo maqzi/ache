@@ -5,6 +5,8 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.PrintWriter;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
 import java.util.HashSet;
 import java.util.Scanner;
 
@@ -12,6 +14,7 @@ import com.codahale.metrics.Counter;
 import com.codahale.metrics.Gauge;
 
 import focusedCrawler.target.model.Page;
+import focusedCrawler.target.repository.TargetRepository;
 import focusedCrawler.util.MetricsManager;
 
 public class TargetStorageMonitor {
@@ -20,13 +23,14 @@ public class TargetStorageMonitor {
     private PrintWriter fRelevantPages;
     private PrintWriter fNonRelevantPages;
     private PrintWriter fHarvestInfo;
+    private PrintWriter fStorageMap;
     
     private Counter relevantUrlsDownloaded;
     private Counter totalNumberOfUrlsDownloaded;
     
     int totalOnTopicPages = 0;
     private int totalOfPages = 0;
-    
+
     public TargetStorageMonitor(String dataPath) {
     	this(dataPath, new MetricsManager(dataPath));
     }
@@ -42,12 +46,15 @@ public class TargetStorageMonitor {
         String fileRelevantPages = dataPath + "/data_monitor/relevantpages.csv";
         String fileHarvestInfo = dataPath + "/data_monitor/harvestinfo.csv";
         String fileNonRelevantPages = dataPath + "/data_monitor/nonrelevantpages.csv";
+        String fileStorageMap = dataPath + "/data_monitor/storagemap.csv";
         
         try {
             fCrawledPages = createBufferedWriter(fileCrawledPages);
             fRelevantPages = createBufferedWriter(fileRelevantPages);
             fHarvestInfo = createBufferedWriter(fileHarvestInfo);
             fNonRelevantPages = createBufferedWriter(fileNonRelevantPages);
+            fStorageMap = createBufferedWriter(fileStorageMap);
+            fStorageMap.printf("%s\t%s\n","original_url","location");
         } catch (Exception e) {
             throw new IllegalStateException("Problem while opening files to export target metrics", e);
         }
@@ -87,6 +94,14 @@ public class TargetStorageMonitor {
         } else {
             fNonRelevantPages.printf("%s\t%.10f\t%d\n", page.getURL().toString(), prob, currentTime);
         }
+
+        String address = null;
+//        try {
+//            address = InetAddress.getByName(page.getURL().getHost()).getHostAddress();
+//        }catch (UnknownHostException uhe){
+//
+//        }
+        fStorageMap.printf("%s\t%s\n",page.getURL(),TargetRepository.storage_map.get(page.getURL().toString()));
     }
 
     public int getTotalOfPages() {
@@ -116,6 +131,7 @@ public class TargetStorageMonitor {
         fHarvestInfo.close();
         fNonRelevantPages.close();
         fRelevantPages.close();
+        fStorageMap.close();
     }
     
 }

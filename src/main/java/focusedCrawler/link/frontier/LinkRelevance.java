@@ -146,10 +146,10 @@ public class LinkRelevance implements Serializable {
     }
 
     public static LinkRelevance createForward(String url, double relevance) {
-        if (isValid(url)) {
+//        if (isValid(url)) { # TODO: add a config file option
             return create(url, relevance, Type.FORWARD);
-        }
-        return null;
+//        }
+//        return null;
     }
 
     public static LinkRelevance createSitemap(String url, double relevance) {

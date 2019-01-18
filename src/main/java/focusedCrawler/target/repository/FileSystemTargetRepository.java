@@ -9,6 +9,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.PrintStream;
 import java.io.UnsupportedEncodingException;
+import java.net.InetAddress;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLDecoder;
@@ -87,10 +88,11 @@ public class FileSystemTargetRepository implements TargetRepository {
         this.hashFilename = hashFilename;
         this.compressData = compressData;
     }
-    
+
     @Override
     public void close() {}
 
+    @Override
     public boolean insert(Page target) {
         try {
             String id = target.getURL().toString();
@@ -102,7 +104,7 @@ public class FileSystemTargetRepository implements TargetRepository {
             }
 
             Path filePath = getFilePath(id, hostPath);
-            
+            storage_map.put(url.toString(),filePath.toString());
             try(OutputStream fileStream = new PrintStream(filePath.toFile())) {
                 if(compressData) {
                     try(OutputStream gzipStream = new DeflaterOutputStream(fileStream)) {

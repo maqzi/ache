@@ -120,7 +120,7 @@ public class HttpDownloader implements Closeable {
                 this.requestLog = openLogFile(logPath);
                 requestLog.printf("%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\n", "timestamp",
                         "original_url","num_redirects", "fetched_url", "status_code","status_message",
-                        "content_type", "response_time");
+                        "content_type", "response_time"); // writes every time a crawl is started - shouldnt be an issue if every crawl has a different name
             } catch (IOException e) {
                 throw new RuntimeException(
                         "Failed to open downloader log at path: " + logPath.toString(), e);

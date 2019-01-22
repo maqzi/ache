@@ -1,9 +1,11 @@
 package focusedCrawler.crawler.async;
 
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import focusedCrawler.util.RDSConnector;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -26,9 +28,11 @@ public class AsyncCrawler extends AbstractExecutionThreadService {
     private final TargetStorage targetStorage;
     private final LinkStorage linkStorage;
     private final HttpDownloader downloader;
+    private final RDSConnector conn;
     private final Map<LinkRelevance.Type, HttpDownloader.Callback> handlers = new HashMap<>();
     private MetricsManager metricsManager;
     private Configuration config;
+
 
     public AsyncCrawler(String crawlerId, TargetStorage targetStorage, LinkStorage linkStorage,
                         Configuration config, String dataPath, MetricsManager metricsManager) {
@@ -40,6 +44,8 @@ public class AsyncCrawler extends AbstractExecutionThreadService {
 
         HttpDownloaderConfig downloaderConfig = config.getCrawlerConfig().getDownloaderConfig();
         this.downloader = new HttpDownloader(downloaderConfig, dataPath, metricsManager);
+
+        this.conn = new RDSConnector(config.getTargetStorageConfig(), crawlerId, dataPath);
 
         this.handlers.put(LinkRelevance.Type.FORWARD, new FetchedResultHandler(crawlerId, targetStorage));
         this.handlers.put(LinkRelevance.Type.SITEMAP, new SitemapXmlHandler(linkStorage));
@@ -100,6 +106,14 @@ public class AsyncCrawler extends AbstractExecutionThreadService {
         targetStorage.close();
         if (metricsManager != null) {
             metricsManager.close();
+        }
+        try {
+            conn.parseCSVMetrics();
+            if (config.getTargetStorageConfig().isUpdateSql()) {
+                //update sql
+                conn.updateAWS();}
+        }catch (Exception ioe){
+            logger.error("Unable to update RDS", ioe);
         }
         logger.info("Shutdown finished.");
     }

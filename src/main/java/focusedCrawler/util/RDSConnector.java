@@ -18,7 +18,6 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
-import java.util.List;
 import java.util.Properties;
 
 public class RDSConnector {
@@ -73,8 +72,8 @@ public class RDSConnector {
 
     public void parseCSVMetrics() throws IOException{
         logger.info("Merging files to update MYSQL");
-        String dRPath = dataPath+crawlerId+"/data_monitor/downloadrequests.csv";
-        String sMPath = dataPath+crawlerId+"/data_monitor/storagemap.csv";
+        String dRPath = dataPath+"/data_monitor/downloadrequests.csv";
+        String sMPath = dataPath+"/data_monitor/storagemap.csv";
 
         CsvReadOptions.Builder dRBuilder = CsvReadOptions.builder(dRPath)
                         .separator('\t')			// table is tab-delimited
@@ -98,14 +97,14 @@ public class RDSConnector {
         dfJoined.addColumns(crawler_name);
 //            logger.info(dfJoined.print(10));
 
-        CsvWriteOptions.Builder dfjBuilder = CsvWriteOptions.builder(dataPath+crawlerId+"/data_monitor/joined.csv");
+        CsvWriteOptions.Builder dfjBuilder = CsvWriteOptions.builder(dataPath+"/data_monitor/joined.csv");
         DataFrameWriter dfw = new DataFrameWriter(dfJoined);
         dfw.csv(dfjBuilder.build());
     }
 
     public void updateAWS() throws SQLException {
         logger.info("Updating RDS endpoint: "+RDS_INSTANCE_HOSTNAME+":"+RDS_INSTANCE_PORT);
-        String updateQuery = "LOAD DATA LOCAL INFILE \""+ dataPath + crawlerId +"/data_monitor/joined.csv\" INTO TABLE ACHECrawls.crawls " +
+        String updateQuery = "LOAD DATA LOCAL INFILE \""+ dataPath + "/data_monitor/joined.csv\" INTO TABLE ACHECrawls.crawls " +
                 "FIELDS TERMINATED BY ',' LINES TERMINATED BY '\n' IGNORE 1 LINES (`timestamp`, `original_url`, `num_redirects`, `fetched_url`, `status_code`, `status_message`, `content_type`, `response_time`, `location`, `crawler_name`);";
 
         //get the connection

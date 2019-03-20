@@ -138,10 +138,10 @@ public class FetcherFactory {
 
     private static OkHttpCookieJar createOkHttpCookieHandler(HttpDownloaderConfig config) {
         List<HttpDownloaderConfig.Cookie> cookies = config.getCookies();
-        if (cookies == null) {
-            return null;
-        }
         OkHttpCookieJar store = new OkHttpCookieJar();
+        if (cookies == null) {
+            return store;
+        }
         for (HttpDownloaderConfig.Cookie cookie : cookies) {
             String[] values = cookie.cookie.split("; ");
             for (int i = 0; i < values.length; i++) {
